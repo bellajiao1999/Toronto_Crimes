@@ -1,0 +1,214 @@
+---
+title: "An Analysis on the Crime Counts in York University Heights from 2018 to 2020"
+subtitle: "Using Data Extracted from Open Data Toronto"
+abstract: "Has the number of crime cases increased in the past few years as a result of many influential global events? The dataset used in this report is extracted from Open Data Toronto, and it contains the number of different types of crimes that have taken place in Toronto from 2014 to 2020. Even though the datasets contain information for 140 neighborhoods, this report focuses only on the York University Heights area, which is famous for its large proportion of the young population[@york]. Also, the analysis will study only the years 2018, 2019 and 2020. Using R studio [@citeR], this report will explore the trends in the data by building models and graphs. "
+author: 
+  - Yujun Jiao
+date: "4/27/2022"
+header-includes:
+  - \usepackage{placeins}
+output:
+  bookdown::pdf_document2:
+    toc: true
+    fig_caption: yes
+bibliography: references.bib
+thanks: "https://github.com/bellajiao1999/Toronto_Crimes"
+
+
+
+---
+
+
+# Introduction
+
+This dataset is extracted from Open Data Toronto, and it contains data for all types of crimes such as assault, break-enter, robbery, homicide and shooting. Due to the raging of COVID-19 and other unexpected global events, many things have changed in the past couple of years. The lives of ordinary people were altered, and some of them might have chosen the wrong path. Thus, this report aims to discuss the counts of these crimes in the past few years in York University Heights. In hopes of discovering the obvious trends in the count of crime
+
+The factors, such as the pandemic, economy, parades, environment and policy changes, will also be considered and discussed. This report is extremely important as it outlines the factors that influence the crime rates. Secondly, the graphs, models and results of this analysis can also be used to predict future trends. Thus, the government and the police can be better prepared for future plans to maintain a peaceful, stable and prosperous community. 
+
+This report is divided into three sections: data, results and discussion. The data section will explore all the variables used in this analysis. The result section will analyze the models that examine the correlations between the variables using R [@citeR]. The discussion will discuss what has been done in this paper, the weakness of the report, and future directions. The code and data that support this analysis can be found in the Github repository: Toronto_crimes.
+
+
+# Data
+
+## Variables and Data Methodology
+
+The data used in this report is extracted from Open Data Toronto Portal[@portal]. It contains both the count and the rate for 8 types of crimes that happened in 140 neighborhoods in Toronto. As we only want to study the count of six crimes, we’re only analyzing the number of assault, break and enter, auto theft, robbery, shooting, homicide. Besides, the data set also outlines the years in which each crime has taken place. Since we’re only focusing on the trends in the crimes in recent years, we’re only studying the data from 2018, 2019 and 2020. Lastly, as the data set contains data for 140 neighborhoods, this analysis will only focus on the crime that happens in the York University Heights region.
+
+This data was directly provided and published by Toronto police Services, and it was licensed by the Open Government. Hence, it was collected by the police services and it’s based on real-life cases. The rate of the crime was calculated by dividing the total number of crimes by 100,000, which is the population estimate that is provided by Environics Analytics.[@portal]
+
+## Combining Variables
+
+In the original data set, each type of crime of a particular year occupies a whole column, and is recorded as a variable by itself. For example, the counts of robbery in 2018 serves as a variable, and it’s named as “Robbery_2018” in the original data set. During the research stage of the project, our team has realized that this way of organizing variables is not very proficient in the later analyzing and visualizing processes. Hence, in order to facilitate the data analysis process, we have decided to combine all the years of one particular type of crime into one variable. In addition, a new variable called “year” was also created. By doing so, the variables are more organized and easier to graph. 
+
+
+```{r, echo=FALSE, include=FALSE, warning=FALSE, message=FALSE}
+
+#create a dataframe
+df <- read.csv("neighbourhood_crime_rates.csv")
+
+#install.packages("dplyr")
+#Clean the dataset
+library(dplyr)
+df1 <- df %>% filter( Neighbourhood == "York University Heights")
+df2<-df1[1,10:12]
+df3<-t(df2)
+colnames(df3)<- c("Assault")
+neighborhood<-c(df1$Neighbourhood)
+df4<-cbind(df3,neighborhood)
+df4<-as.data.frame(df4)
+
+
+#df4$Count=as.numeric(df4$Count)
+df4$year<-c(2018,2019,2020)
+df4$BnE=c(df1$BreakAndEnter_Rate2018,df1$BreakAndEnter_Rate2019,df1$BreakAndEnter_Rate2020)
+df4$Auto_Theft=c(df1$AutoTheft_2018, df1$AutoTheft_2019,df1$AutoTheft_2020)
+df4$Robbery=c(df1$Robbery_2018,df1$Robbery_2019,df1$Robbery_2020)
+df4$Shooting=c(df1$Shootings_2018, df1$Shootings_2019, df1$Shootings_2020)
+df4$Homicide=c(df1$Homicide_2018, df1$Homicide_2019, df1$Homicide_2020)
+df4$Assault <- as.integer(df4$Assault) 
+df4$year<- as.character(df4$year)
+
+print(df4)
+
+```
+
+# Variables: Types of Crimes
+
+In this report, we’re interested to see if the criminal cases have changed in the last couple of years. Thus, we have cleaned the original data set by extracting the variables that are relevant to our research question. To help the audience to better comprehend the data, bar charts were made to show the trends that exist within the data.
+
+Figure \@ref(fig:assault) shows the number of assault cases from 2018 to 2020. The year in which the crime was committed was labeled on the x-axis and the count of crime cases was labeled on the y-axis. In Figure \@ref(fig:assault), there’s no obvious trend in the number of cases, as the count for assault cases was highest in 2019. As we know, many social changes such as the pandemic and elections have occurred in 2020, and 2019 was regarded as a peaceful year in comparison to the later years. Thus, the graph for assault is not coherent to our assumption.
+
+Secondly, in Figure \@ref(fig:brk), the number has actually decreased from 2018 to 2019. The number of people who broke and entered other people’s houses was lowest in 2020. This is also incoherent to our expectation as we believe that this number would increase in 2020 as people are afraid to stay outside due to the raging pandemic. Next, Figure \@ref(fig:rob) shows a similar pattern to the Figure \@ref(fig:brk). The number of robbery cases has decreased since 2018, and was lowest in 2020. 
+
+In contrast, the auto theft cases shown in Figure \@ref(fig:autotheft) have demonstrated an increasing pattern in the count of cases. The number of reported cases of auto theft has shown a proportional relationship with time, and the number has changed significantly from 91 to 184. Similarly, the high number of crime cases in 2020 in Figure \@ref(fig:shooting). The number of shooting cases has increased from 6 to 12 from 2019 to 2020. Obviously, the shooting cases have increased immensely in the last couple of years. Finally, the number of homicide cases that happened within the York University Heights has not shown useful results for our research question. As homicide is a very serious crime, it happens rarely, and there was only 1 case in 2018, 0 case in 2019 and 1 case in 2020.
+
+```{r assault, fig.cap="Count of Assaults from 2018 to 2020", fig.pos="H", echo = FALSE}
+
+#Assaults
+library(ggplot2)
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(Assault)),  aes(x = year, y = Assault, main="Child-Care Usage", fill = Assault)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+  
+```
+
+
+```{r brk, fig.cap="Count of Break & Enter cases from 2018 to 2020", fig.pos="H", echo = FALSE}
+
+#Break and enter
+
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(BnE)),  aes(x = year, y = BnE,  fill = BnE)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+```
+
+
+```{r rob, fig.cap="Count of Break & Enter cases from 2018 to 2020",fig.pos="H", echo = FALSE}
+
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(Robbery)),  aes(x = year, y = Robbery,  fill = Robbery)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+```
+
+
+```{r autotheft, fig.cap="Count of Auto Thefts cases from 2018 to 2020",fig.pos="H", echo = FALSE}
+
+#Auto theft
+
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(Auto_Theft)),  aes(x = year, y = Auto_Theft,  fill = Auto_Theft)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+```
+
+```{r shooting, fig.cap="Count of shooting cases from 2018 to 2020",fig.pos="H", echo = FALSE}
+
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(Shooting)),  aes(x = year, y = Shooting, main="Child-Care Usage", fill = Shooting)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+```
+
+```{r homicide, fig.cap="Count of homicide cases from 2018 to 2020",fig.pos="H", echo = FALSE}
+
+theme_bw <- 
+  options(repr.plot.width=15, repr.plot.height=6)
+  ggplot(data = subset(df4,!is.na(Homicide)),  aes(x = year, y = Homicide, main="Child-Care Usage", fill = Homicide)) + labs(fill = "Counts of Cases") +
+         geom_bar(stat = "identity") + 
+         scale_y_continuous(name="Count of Cases") + 
+         scale_x_discrete(name="Year") +
+         theme_bw()
+```
+
+# Results
+        
+In the previous section, plots were made to show the correlation between the number of criminal cases and year. In conclusion, assault and homicide didn’t show any trend in the numbers; the break entry and robbery cases have decreased as time passed by, and auto theft and shooting cases have increased in the most recent years. Unfortunately, with the current data, it’s difficult to make solid assumptions about the relationship between time and the crime counts. 
+
+We have decided to build linear regression models as a way to monitor the relationship between these variables. Hence, we have chosen the count of each type of crime as our response variable, and have decided to use “year” as our predictor variables. For example, for the robbery model, the formula of the model is: Robbery = a + b(year). Robbery is the response variable, year is the predictor variable, and a and b are intercept and slope. Thus, we have come up with six models for six dependent variables. However, it’s very difficult to make models with only one independent variable each time, so the p-value for each model was very high. For assault, the p-value was 0.658 and for shooting, it was 0.546. The p-value was smallest for break entry, which was 0.0949. We know that if the p-value is higher than 0.05, then it would be unwise to state that the factors have a significant impact on the response variable. Thus, for this report, we claim that the variables used in the model are not significant to the year. In order words, there’s no evidence that the number of crimes has increased with time. 
+
+```{r, echo= FALSE, message=FALSE,warning=FALSE, results=FALSE}
+df5 = df4
+df5$year<- as.integer(df5$year)
+#model for assault
+
+moda <- lm(Assault ~ year, data = df5)
+summary(moda)
+
+modb <- lm(BnE ~ year, data = df5)
+summary(modb)
+
+modr <- lm(Robbery ~ year, data = df5)
+summary(modr)
+
+mods <- lm(Shooting ~ year, data = df5)
+summary(mods)
+
+
+```
+# Discussion
+## What is done in this report?
+
+The original dataset published on Open Data Toronto Portal was very lengthy and contained a lot of information. This paper has cleaned the old data set and created a new data set that is subject to the research question. In order to obtain an answer to this question, research has been made to acknowledge the background of York University Heights. After a series of analyses, the trends in the number of six types of crimes such as assault, break entry, auto theft, shooting and homicide were plotted and studied. In this report, we came to the conclusion that some
+
+
+## What is something we learn about the world?
+
+We have learned a lot about the world by conducting this research project. Most importantly, we now realize that society is considerably sensitive to influential events, policy changes, and other unexpected factors. Economy, politics, public health and other factors may easily affect the stability of the society and result in severe consequences. In fact, the crime rate is not the only consequence of an unstable society. If the impact of a certain event is not represented in the number of crime cases, it may be shown in other factors such as mortality rate, health screening surveys, financial conditions, etc. Thus, it’s interesting to see that for some types of crimes, the numbers have or have not changed significantly in the past few years.
+
+
+## Weakness 
+ 
+There’re many weaknesses and flaws in this report. First of all, this report was limited to only one neighborhood in the whole Toronto region. Even though North York Heights is highly populated and contains a lot of criminal cases, it is still not sufficient for us to make confident answers to the question. Also, sampling and non-sampling bias may also exist in the data set. As the police services can only record the cases that have been reported to the police station, those crimes that were kept secret and not reported are not included in this data. It’s very important for the readers of this report to acknowledge the flaws and weaknesses of the data set and the report, as they may potentially affect the clarity, accuracy and correctness of the statements that are being made. 
+
+
+## Future directions
+
+In order to better comprehend the impacts and consequences of large-scale global events such as political changes, pandemics and other social events, more reports should be made to support further analysis and conclusions. More precisely, our team aims to do more analysis on other neighborhoods within or outside the Toronto areas. As different neighborhoods symbolize different population density, percentages of young population and income levels, it is essential to study all the neighborhoods as a whole to better explore the consequences of the global impacts. Also, it’s also interesting to dig deeper into the factors that have affected the crime rates. Thus, in future work, our team will look at the actual factors that have played important roles in the criminals’ lives that have caused them to choose the wrong path.
+
+
+# Appendix
+
+---
+nocite: |
+  @ggplot2, @idplyr, @gt, @knitr, @tidyverse
+---
+# References
+
